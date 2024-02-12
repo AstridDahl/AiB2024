@@ -139,3 +139,109 @@ print(cost_optimal(C, D, substitution_matrix, -5))
 alignment = align(C, D, substitution_matrix, -5)
 for s in alignment:
     print(s)
+
+
+# Carolina's code
+
+def print_dp_matrix(seq1, seq2, matrix):
+    max_len = max(len(str(cell)) for row in matrix for cell in row)
+    fmt = "{{:>{}}}".format(max_len+1)
+    row_fmt = fmt * (len(matrix[0])+1) + '\n'
+    mat_fmt = row_fmt *  (len(matrix)+1)
+    seq1 = ' ' + seq1
+    seq2 = ' ' + seq2
+    lst = [' '] + list(seq2)
+    for i in range(len(seq1)):
+        lst.extend([seq1[i]] + list(map(repr, matrix[i])))
+    print(mat_fmt.format(*lst))
+
+# only your function definitions...
+
+# Empty matrix
+def empty_matrix(sekvens_1,sekvens_2):
+    empty_list = []
+    for i in range(sekvens_1): 
+        liste = []
+        for antal in range(sekvens_2):
+            liste.append(None)
+        empty_list.append(liste)
+    return empty_list
+
+def prepare_matrix(sekvens_1, sekvens_2, g_s):
+    empty = empty_matrix(sekvens_1, sekvens_2)
+    gap_value = - g_s
+    for index in range(sekvens_1):
+        gap_value+=g_s
+        empty[index][0] = gap_value
+    g_v = - g_s
+    for i in range(sekvens_2): 
+        g_v+=g_s
+        empty[0][i]= g_v
+    return empty
+
+# NW
+def fill_matrix(sekvens_1,sekvens_2,dd,g_s):
+    matrix = prepare_matrix(len(sekvens_1)+1, len(sekvens_2)+1, g_s)
+    for i in range(1,len(sekvens_1)+1):
+        for j in range(1,len(sekvens_2)+1):
+            venstre = matrix[i][j-1]+g_s
+            op = matrix[i-1][j]+g_s
+            diagonal = matrix[i-1][j-1]+dd[sekvens_1[i-1]][sekvens_2[j-1]]
+            største_værdi = max(venstre,op,diagonal)
+            matrix[i][j] = største_værdi
+    return matrix
+
+
+def get_traceback_arrow(matrix, row, col, dd, g_s):
+    score_diagonal = matrix[row-1][col-1]
+    score_left = matrix[row][col-1]
+    score_up = matrix[row-1][col]
+    score_current = matrix[row][col]
+    if score_current == score_diagonal+dd:
+        return 'diagonal'
+    elif score_current == score_left + g_s:
+        return 'left'
+    elif score_current == score_up + g_s:
+        return 'up'
+
+def trace_back(sekvens_1, sekvens_2, matrix, score_matrix, g_s):
+    aligned_1 = ''
+    aligned_2 = ''
+    række = len(sekvens_1)
+    kolonne = len(sekvens_2)
+    while række > 0 and kolonne > 0:
+        base_1 = sekvens_1[række-1]
+        base_2 = sekvens_2[kolonne-1]
+        match_score = score_matrix[base_1][base_2]
+        traceback_arrow = get_traceback_arrow(matrix, række, kolonne, match_score, g_s)
+        if traceback_arrow == 'diagonal':
+            aligned_1 = base_1 + aligned_1
+            aligned_2 = base_2 + aligned_2
+            række -= 1
+            kolonne -= 1
+        elif traceback_arrow == 'up':
+            aligned_1 = base_1 + aligned_1
+            aligned_2 = '-'  + aligned_2
+            række -= 1
+        elif traceback_arrow == 'left':
+            aligned_1 = '-' + aligned_1
+            aligned_2 = base_2 + aligned_2
+            kolonne -= 1
+    while række > 0:
+        base_1 = sekvens_1[række-1]
+        aligned_1 = base_1 + aligned_1
+        aligned_2 = '-' + aligned_2
+        række -= 1
+    while kolonne > 0:
+        base_2 = sekvens_2[kolonne-1]
+        aligned_1 = '-' + aligned_1
+        aligned_2 = base_2 + aligned_2
+        kolonne -= 1
+    return [aligned_1, aligned_2]
+
+def align(sekvens_1,sekvens_2,dd,g_s):
+    fyldt_matrix = fill_matrix(sekvens_1,sekvens_2,dd,g_s)
+    traceback = trace_back(sekvens_1, sekvens_2, fyldt_matrix, dd, g_s)
+    return traceback
+
+
