@@ -43,13 +43,6 @@ def read_control_file(file):
         scoring_matrix.append([int(x) for x in line[1:]])
     return gap_cost, alphabet, np.array(scoring_matrix)
 
-########### default scoring matrix ################################### 
-# we won't take this as an input 
-# scoring_matrix = np.array([[2,0,0,0],
-#                            [0,2,0,0],
-#                            [0,0,2,0],
-#                            [0,0,0,2]])
-
 
 
 ######## Cost function between two nucleotides #######################
@@ -127,7 +120,8 @@ def backtrack_one(A,B, scoring_matrix, gap_cost):
             j -= 1
     return (align_A, align_B, T)
 
-
+# user input: Request alignment?
+user_input = input('Align sequences? (y/n): ')
 # main function
 def main():
     # get the sequences
@@ -138,48 +132,23 @@ def main():
     B = list(seqs.values())[1]
     # get the alignment
     alignment = backtrack_one(A,B, scoring_matrix = scoring_matrix, gap_cost = gap_cost)
-    # print the parameters
-    print('Gap cost: ', gap_cost)
-    print('Scoring matrix: \n', scoring_matrix)
-    print('sequences: \n', A, '\n', B)
-    # print the alignment
-    print('alignment: \n', alignment[0], '\n', alignment[1])
-    # print the score
-    print(alignment[2])
+    print(alignment[2][-1][-1])
+    # store the alignment in a fasta file
+    if ((user_input == 'y') | (user_input == 'Y')):
+        # file name: input file before its suffix + _alignment.fasta
+        input_file = sys.argv[2]
+        output_file = input_file[:input_file.rfind('.')] + '_alignment.fasta'
+        with open(output_file, 'w') as f:
+            f.write('>seq1\n' + alignment[0] + '\n')
+            f.write('>seq2\n' + alignment[1] + '\n')
+        
+
+        # with open(f'{sys.argv[2]}_alignment.fasta', 'w') as f:
+        #     f.write('>seq1\n' + alignment[0] + '\n')
+        #     f.write('>seq2\n' + alignment[1] + '\n')
     
 
 # run the main function
 if __name__ == "__main__":
     main()
 
-
-
-
-
-
-
-
-
-
-
-# ############ user input ########################################
-# choice = input("Request alignment sequence alignment? (y/n): ")
-
-# # main function
-# def main():
-#     # get the sequences
-#     gap_cost, alphabet, scoring_matrix = read_control_file(sys.argv[1])
-#     seqs = read_fasta(sys.argv[2])
-#     # get the sequences
-#     A = list(seqs.values())[0]
-#     B = list(seqs.values())[1]
-#     # get the alignment
-#     alignment = backtrack_one(A,B, scoring_matrix = scoring_matrix, gap_cost = gap_cost)
-#     # print the alignment
-#     if (choice == 'y'| choice == 'Y'):
-#         #store the alignment in a file in the directory where the script is run
-#         with open('alignment.txt', 'w') as f:
-#             f.write(alignment[0] + '\n')
-#             f.write(alignment[1] + '\n')
-#     # print the score
-#     print(optimal(A,B)[-1,-1])
