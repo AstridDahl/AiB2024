@@ -17,6 +17,9 @@ def read_fasta(file):
             seqs[header] = ''
         else:
             seqs[header] += line.strip()
+    # make the sequences lowercase
+    for header, seq in seqs.items():
+        seqs[header] = seq.lower()
     return seqs
 
 ########### define function to read the Phylip-like control file ####
@@ -41,21 +44,24 @@ def read_control_file(file):
         line = line.strip().split()
         alphabet.append(line[0])
         scoring_matrix.append([int(x) for x in line[1:]])
+    # make the alphabet lowercase
+    alphabet = [x.lower() for x in alphabet]
     return gap_cost, alphabet, np.array(scoring_matrix)
 
 
 
 ######## Cost function between two nucleotides #######################
-def cost(nuc1, nuc2, scoring_matrix):
-#   will use this for indexing
-    nucleotides = ['a','c','g','t']
+def cost(nuc1, nuc2, scoring_matrix, alphabet):
+#   will use this for indexing, so it's a list with the order of alphabet
+    nucleotides = alphabet
+    # nucleotides = ['a','c','g','t']
 #   set the scoring matrix the scoring matrix
     scoring_matrix = scoring_matrix
 #   index into the scoring matrix based on the given nucleotides to get cost
     return scoring_matrix[nucleotides.index(nuc1), nucleotides.index(nuc2)]
 
 ######## define the optimality table function  #######################
-def optimal(A,B, scoring_matrix, gap_cost):
+def optimal(A,B, scoring_matrix, gap_cost, alphabet):
     # get table dimensions
     n = len(A)
     m = len(B)
@@ -87,23 +93,23 @@ def optimal(A,B, scoring_matrix, gap_cost):
     for i in range(1,n+1):
         for j in range(1,m+1):
             T[i,j] = min(
-                T[i-1,j-1] + cost(A[i-1],B[j-1], scoring_matrix), 
+                T[i-1,j-1] + cost(A[i-1],B[j-1], scoring_matrix, alphabet), 
                 T[i-1,j] + gap_cost, 
                 T[i,j-1] + gap_cost 
             )
     return T
 
 ######## define the backtracking function  #######################
-def backtrack_one(A,B, scoring_matrix, gap_cost):
+def backtrack_one(A,B, scoring_matrix, gap_cost, alphabet):
     align_A = ''
     align_B = ''
     i = len(A)
     j = len(B)
-    T = optimal(A,B, scoring_matrix= scoring_matrix, gap_cost = gap_cost)
+    T = optimal(A,B, scoring_matrix, gap_cost, alphabet)
     # keep iterating while we haven't reached the end of either sequence
     while i > 0 and j > 0:
         # if the score in T came from a match/mismatch...
-        if T[i,j] == T[i-1,j-1] + cost(A[i-1],B[j-1], scoring_matrix):
+        if T[i,j] == T[i-1,j-1] + cost(A[i-1],B[j-1], scoring_matrix, alphabet):
             align_A = A[i-1] + align_A
             align_B = B[j-1] + align_B
             i -= 1
@@ -127,11 +133,19 @@ def main():
     # get the sequences
     gap_cost, alphabet, scoring_matrix = read_control_file(sys.argv[1])
     seqs = read_fasta(sys.argv[2])
+    # check if the sequences contain only the alphabet
+    for seq in seqs.values():
+        for nuc in seq:
+            if nuc not in alphabet:
+                raise ValueError('The sequence contains a nucleotide not in the alphabet')
     # get the sequences
     A = list(seqs.values())[0]
     B = list(seqs.values())[1]
     # get the alignment
-    alignment = backtrack_one(A,B, scoring_matrix = scoring_matrix, gap_cost = gap_cost)
+    alignment = backtrack_one(A,B, 
+                              scoring_matrix = scoring_matrix, 
+                              gap_cost = gap_cost, 
+                              alphabet = alphabet)
     print(alignment[2][-1][-1])
     # store the alignment in a fasta file
     if ((user_input == 'y') | (user_input == 'Y')):
