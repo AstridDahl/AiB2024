@@ -142,12 +142,6 @@ def main():
             f.write('>seq1\n' + alignment[0] + '\n')
             f.write('>seq2\n' + alignment[1] + '\n')
         
-
-        # with open(f'{sys.argv[2]}_alignment.fasta', 'w') as f:
-        #     f.write('>seq1\n' + alignment[0] + '\n')
-        #     f.write('>seq2\n' + alignment[1] + '\n')
-    
-
 # run the main function
 if __name__ == "__main__":
     main()

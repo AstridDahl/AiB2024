@@ -2,8 +2,55 @@
 # Here, g(k) = 5+5k, i.e., the opening cost a = 10 and the extension cost b = 5.
 # dissimilarity score. 
 
+####### IMPORTS ########################################
 import numpy as np
+import os
+import sys
+###### HELPER FUNCTIONS ###############################
+def read_fasta(file):
+    with open(file, 'r') as f:
+        lines = f.readlines()
+    seqs = {}
+    for line in lines:
+        if line[0] == '>':
+            header = line.strip()
+            seqs[header] = ''
+        else:
+            seqs[header] += line.strip()
+    return seqs
 
+# this will read in the score matrix, gap cost, and alphabet
+# the file will have the following format:
+# open: 10
+# extend: 5
+# A  0  5  2  5
+# C  5  0  5  2
+# G  2  5  0  5
+# T  5  2  5  0
+
+def read_control_file(file):
+    with open(file, 'r') as f:
+        lines = f.readlines()
+    # get the opening cost, number in the line that starts with open
+        open_cost = int(lines[0].strip().split()[1])
+    # get the extension cost, number in the line that starts with extend
+        extend_cost = int(lines[1].strip().split()[1])  
+    # get the alphabet, first character of each line after the first line.
+    alphabet = []
+    for line in lines[2:]:
+        alphabet.append(line[0])
+    scoring_matrix = {}
+    # get the scoring matrix as a dictionary mapping nucleotides to penalties
+    scoring_matrix = {}
+    for line in lines[2:]:
+        line = line.strip().split()
+        nucleotide = line[0]
+        penalties = [int(p) for p in line[1:]]
+        scoring_matrix[nucleotide] = dict(zip(alphabet, penalties))
+
+    return open_cost, extend_cost, alphabet, scoring_matrix
+
+###### AlIGNMENT FUNCTIONS ################################
 def empty_matrix(r, c): 
     m = []
     for i in range(r):
@@ -38,11 +85,14 @@ def prepare_matrix_F(r, c):
     return pm 
 # print(prepare_matrix_F(4,4))
 
-substitution_matrix = {'A': {'A':0, 'T':5, 'G':2, 'C':5},
-               'T': {'A':5, 'T':0, 'G':5, 'C':2}, 
-               'G': {'A':2, 'T':5, 'G':0, 'C':5}, 
-               'C': {'A':5, 'T':2, 'G':5, 'C':0}}
-
+# substitution_matrix = {'A': {'A':0, 'T':5, 'G':2, 'C':5},
+#                'T': {'A':5, 'T':0, 'G':5, 'C':2}, 
+#                'G': {'A':2, 'T':5, 'G':0, 'C':5}, 
+#                'C': {'A':5, 'T':2, 'G':5, 'C':0}}
+substitution_matrix2 = {'A': {'A': 0, 'C': 5, 'G': 2, 'T': 5}, 
+                      'C': {'A': 5, 'C': 0, 'G': 5, 'T': 2}, 
+                      'G': {'A': 2, 'C': 5, 'G': 0, 'T': 5}, 
+                      'T': {'A': 5, 'C': 2, 'G': 5, 'T': 0}}
 def compute_cost(seq1, seq2, scores, a, b):
     r = len(seq1)+1
     c = len(seq2)+1
@@ -141,35 +191,28 @@ def align(seq1, seq2, scores, a, b):
     alignment = traceback(seq1, seq2, matrices, scores, a, b)
     return alignment
 
-# Example
-seq1 = 'aggt'
-seq2 = 'acta'
-# print(fill_matrices(seq1, seq2, substitution_matrix, 10, 5))
 
-# Case 1: score of 24. alignment works. 
-seq1 = 'acgtgtcaacgt' 
-seq2 = 'acgtcgtagcta'
-# print(compute_cost(seq1, seq2, substitution_matrix, 10, 5)) 
-# print(align(seq1, seq2, substitution_matrix, 10, 5))
-
-# Case 2: score of 22. works. 
-seq1 = 'aataat' # 'aataat'
-seq2 = 'aagg' # 'aagg'
-# print(compute_cost(seq1, seq2, substitution_matrix, 10, 5))
-# matrices = fill_matrices(seq1, seq2, substitution_matrix, 10, 5)
-# print(align(seq1, seq2, substitution_matrix, 10, 5))
-
-# Case 3: score of 29. Works. 
-seq1 = 'tccagaga'
-seq2 = 'tcgat'
-# print(compute_cost(seq1, seq2, substitution_matrix, 10, 5))
-print(fill_matrices(seq1, seq2, substitution_matrix, 10, 5))
-print(align(seq1, seq2, substitution_matrix, 10, 5))
-
-# Case 4: score of 395. Works. 
-seq1 = 'ggcctaaaggcgccggtctttcgtaccccaaaatctcggcattttaagataagtgagtgttgcgttacactagcgatctaccgcgtcttatacttaagcgtatgcccagatctgactaatcgtgcccccggattagacgggcttgatgggaaagaacagctcgtctgtttacgtataaacagaatcgcctgggttcgc'
-seq2 = 'gggctaaaggttagggtctttcacactaaagagtggtgcgtatcgtggctaatgtaccgcttctggtatcgtggcttacggccagacctacaagtactagacctgagaactaatcttgtcgagccttccattgagggtaatgggagagaacatcgagtcagaagttattcttgtttacgtagaatcgcctgggtccgc'
-# print(compute_cost(seq1, seq2, substitution_matrix, 10, 5))
-# print(align(seq1, seq2, substitution_matrix, 10, 5))
-# print('ggcctaaaggcgccggtctttcgtaccccaaaatctcggcattttaagataagtgagtgttgcgttacactagcgatctaccgcgtcttatacttaagcgtatgcccagatctgactaatcgtgcccccggattagacgggcttgatgggaaagaacagctcgtc------tgtttacgtataaacagaatcgcctgggttcgc' == 'ggcctaaaggcgccggtctttcgtaccccaaaatctcggcattttaagataagtgagtgttgcgttacactagcgatctaccgcgtcttatacttaagcgtatgcccagatctgactaatcgtgcccccggattagacgggcttgatgggaaagaacagctcgtc------tgtttacgtataaacagaatcgcctgggttcgc')
-# print('gggctaaaggttagggtctttcacactaaagagtggt-gcgtatcgtggctaatgtaccgcttctggtatc-gtggcttacggc--cagacctacaagtactagacctga--gaactaatcttgtcgagccttccattgagggtaatgggagagaacatcgagtcagaagttattcttgtttacgtagaatcgcctgggtccgc' == 'gggctaaaggttagggtctttcacactaaagagtggt-gcgtatcgtggctaatgtaccgcttctggtatc-gtggcttacggc--cagacctacaagtactagacctga--gaactaatcttgtcgagccttccattgagggtaatgggagagaacatcgagtcagaagttattcttgtttacgtagaatcgcctgggtccgc')
+######## MAIN FUNCTION ################################
+# user input: Request alignment?
+user_input = input('Align sequences? (y/n): ')
+# main function
+def main():
+    # get the sequences
+    open_cost, extend_cost, alphabet, scoring_matrix = read_control_file(sys.argv[1])
+    seqs = read_fasta(sys.argv[2])
+    # get the sequences
+    A = list(seqs.values())[0]
+    B = list(seqs.values())[1]
+    print(compute_cost(A, B, scoring_matrix, open_cost, extend_cost))
+    if ((user_input == 'y') | (user_input == 'Y')):
+        alignment = align(A, B, scoring_matrix, open_cost, extend_cost)
+        # file name: input file before its suffix + _alignment.fasta
+        input_file = sys.argv[2]
+        output_file = input_file[:input_file.rfind('.')] + '_alignment.fasta'
+        with open(output_file, 'w') as f:
+            f.write('>seq1\n' + alignment[0] + '\n')
+            f.write('>seq2\n' + alignment[1] + '\n')
+        
+# run the main function
+if __name__ == "__main__":
+    main()
