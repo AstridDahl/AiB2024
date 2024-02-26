@@ -39,7 +39,6 @@ def read_control_file(file):
     alphabet = []
     for line in lines[2:]:
         alphabet.append(line[0])
-    scoring_matrix = {}
     # get the scoring matrix as a dictionary mapping nucleotides to penalties
     scoring_matrix = {}
     for line in lines[2:]:
@@ -153,18 +152,18 @@ def traceback(seq1, seq2, matrices, scores, a, b):
         else: 
             k = 2
             while k <= i and k <= j: # '<=' evalueres før 'and'.
-                if D[i][j] == D[i][j-k] + a + b*(k-1):
-                    aligned1 = '-'*k + aligned1
-                    aligned2 = seq2[j-k:j] + aligned2 
+                if D[i][j] == D[i][j-k] + a + b*(k-1):  # j-1 in seq1 is where the gap opens
+                    aligned1 = '-'*k + aligned1         # add two gaps
+                    aligned2 = seq2[j-k:j] + aligned2  
                     j -= k
                     break
-                elif D[i][j] == D[i-k][j] + a + b*(k-1):
+                elif D[i][j] == D[i-k][j] + a + b*(k-1): # alternating between checking cost of deletion and insertion for efficiency
                     aligned1 = seq1[i-k:i] + aligned1 
                     aligned2 = '-'*k + aligned2
                     i -= k
                     break
-                k += 1 
-            while k <= j:
+                k += 1                                  # j-2/i-2 or further back is where the gap opens
+            while k <= j:                               # when seq2 (i) is to short to have the gap we are looking for
                 if D[i][j] == D[i][j-k] + a + b*(k-1):
                     aligned1 = '-'*k + aligned1
                     aligned2 = seq2[j-k:j] + aligned2 
@@ -198,8 +197,8 @@ user_input = input('Align sequences? (y/n): ')
 # main function
 def main():
     # get the sequences
-    open_cost, extend_cost, alphabet, scoring_matrix = read_control_file(sys.argv[1])
-    seqs = read_fasta(sys.argv[2])
+    open_cost, extend_cost, alphabet, scoring_matrix = read_control_file(sys.argv[1]) # arg1 is the cost file
+    seqs = read_fasta(sys.argv[2])                                                    # arg2 is a fasta file with seqs
     # get the sequences
     A = list(seqs.values())[0]
     B = list(seqs.values())[1]
