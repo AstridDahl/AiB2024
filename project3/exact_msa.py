@@ -1,4 +1,3 @@
-
 ############################
 #        PROJECT 03        #
 ############################
@@ -222,19 +221,19 @@ def MSA3k(S1, S2, S3, scores, gap_cost):
             i -= 1
             j -= 1
             k -= 1
-        elif D[i+1][j+1][k+1] == D[i][j][k+1] + cij + gap_cost: 
+        elif D[i+1][j+1][k+1] == D[i][j][k+1] + cij + 2*gap_cost: 
             aligned1 = S1[i] + aligned1
             aligned2 = S2[j] + aligned2
             aligned3 = '-' + aligned3
             i -= 1
             j -= 1
-        elif D[i+1][j+1][k+1] == D[i][j+1][k] + cik + gap_cost:
+        elif D[i+1][j+1][k+1] == D[i][j+1][k] + cik + 2*gap_cost:
             aligned1 = S1[i] + aligned1
             aligned2 = '-' + aligned2
             aligned3 = S3[k] + aligned3
             i -= 1
             k -= 1
-        elif D[i+1][j+1][k+1] == D[i+1][j][k] + cjk + gap_cost:
+        elif D[i+1][j+1][k+1] == D[i+1][j][k] + cjk + 2*gap_cost:
             aligned1 = '-' + aligned1 
             aligned2 = S2[j] + aligned2
             aligned3 = S3[k] + aligned3 
