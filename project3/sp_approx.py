@@ -1,5 +1,6 @@
 # 2-approximation algorithm Gusfield. 
 import random
+from tqdm import tqdm
 substitution_matrix = {'A': {'A':0, 'T':5, 'G':2, 'C':5},
                'T': {'A':5, 'T':0, 'G':5, 'C':2}, 
                'G': {'A':2, 'T':5, 'G':0, 'C':5}, 
@@ -190,7 +191,7 @@ def ApproxAlignment(Seqs, scores, g):
     Seqs_without_center_string = Seqs[:]
     Seqs_without_center_string.remove(S1)
     M = [S1] # Initialisering forkert. M skal bestå af de første to sekvenser til start. 
-    for i in range(len(Seqs_without_center_string)): 
+    for i in tqdm(range(len(Seqs_without_center_string))): 
         A = align(S1, Seqs_without_center_string[i], scores, g)
         M = extend(M, A) 
     return M
@@ -213,7 +214,7 @@ def cost_optimal(aligned1, aligned2, scores, g):
 # Compute cost for MSA linear gap cost. 
 def cost_ApproxAlignment(MSA, scores, g):
     cost = 0
-    for i in range(len(MSA)):
+    for i in tqdm(range(len(MSA))):
         for j in range(i+1, len(MSA)): # correct looping. 
             cost += cost_optimal(MSA[i], MSA[j], scores, g)
     return cost
@@ -262,7 +263,12 @@ def read_fasta(file):
             seqs[header] += line.strip()
     # make the sequences uppercase
     for header, seq in seqs.items():
-        seqs[header] = ''.join([random.choice(['A', 'C', 'G', 'T']) if char == 'N' else char for char in seq.upper()])
+        # replace N's from AGCT, R's from AG, S's from CG, make all uppercase 
+         seqs[header] = ''.join([random.choice(['A', 'C', 'G', 'T']) if char == 'N' else \
+                                 random.choice(['A','G']) if char == 'R' else \
+                                 random.choice(['C','G']) if char == 'S' else \
+                                 char for char in seq.upper()])
+
     return seqs
 
 # ask if the user wants an alignment or just a cost
@@ -276,6 +282,8 @@ def ask_user():
 #### define a main function ####
 def main():
     import sys
+    # are we aligning or just getting the cost?
+    align = ask_user()
     # read the file
     if len(sys.argv) != 2:
         print("Usage: msa_sp_score.py <filename>")
@@ -283,12 +291,17 @@ def main():
     seqs = read_fasta(filename)
     seqs = list(seqs.values())
     msa = ApproxAlignment(seqs, score_matrix, gap_penalty)
-    # are we aligning or just getting the cost?
-    align = ask_user()
 
     print(cost_ApproxAlignment(msa, score_matrix, gap_penalty))
+    # store the cost in a file
+    with open('msa_cost.txt', 'w') as f:
+        f.write(str(cost_ApproxAlignment(msa, score_matrix, gap_penalty)) + '\n')
     if align:
-        print(msa)
+    # store the msa as a fasta file
+        with open('msa.fasta', 'w') as f:
+            for i, seq in enumerate(msa):
+                f.write('>seq' + str(i) + '\n')
+                f.write(seq + '\n')
 
 
 #### execute the main function ####
