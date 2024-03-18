@@ -1,5 +1,5 @@
 # 2-approximation algorithm Gusfield. 
-
+import random
 substitution_matrix = {'A': {'A':0, 'T':5, 'G':2, 'C':5},
                'T': {'A':5, 'T':0, 'G':5, 'C':2}, 
                'G': {'A':2, 'T':5, 'G':0, 'C':5}, 
@@ -248,6 +248,8 @@ score_matrix = {
 }
 
 ##### define a read_fasta function ####
+import random
+
 def read_fasta(file):
     with open(file, 'r') as f:
         lines = f.readlines()
@@ -260,7 +262,7 @@ def read_fasta(file):
             seqs[header] += line.strip()
     # make the sequences uppercase
     for header, seq in seqs.items():
-        seqs[header] = seq.upper()
+        seqs[header] = ''.join([random.choice(['A', 'C', 'G', 'T']) if char == 'N' else char for char in seq.upper()])
     return seqs
 
 # ask if the user wants an alignment or just a cost
