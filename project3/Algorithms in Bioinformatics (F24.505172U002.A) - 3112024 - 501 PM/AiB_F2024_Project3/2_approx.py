@@ -12,7 +12,7 @@ def center_string(seqs, scores, g):
     return center
 
 # Storm's code
-def extend_msa(M, A):  # M is a multiple alignment represented as a list of columns
+def extend_msa(M, A):  # M is a multiple alignment represented as a list of columns, A is the sequence we want to extend M with
     MA = []
     i = 0
     j = 0
@@ -78,23 +78,33 @@ def extend_msa(M, A):  # M is a multiple alignment represented as a list of colu
 
     return MA
 
+# function to do all the extensions of M with A for a final alignment
 def align_approx(seqs, scores, g):
     center_index = center_string(seqs, scores, g)
     M = seqs[center_index]   
-    del seqs[center_index]
+    print(M)
+    del seqs[center_index]  # delete the chosen center string, so it isn't aligned with itself later
     MA = []
-    for c in M:
-        MA = MA.append([c])        # should be a list of columns (only one row at initialization)
+    for c in M:               # c is meant as column
+        print(c)
+        MA.append([c])        # should be a list of columns (only one row at initialization)
+    print(MA)
     for seq in seqs:
-        seq_aslist = []
-        for c in seq:
-            seq_aslist = seq_aslist.append([c])
-        A =  # optimal pairwise alignment, list of columns (only two rows)
-        MA = extend_msa(MA, seq_aslist)   # input is two lists of columns
+        A = align(M, seq, scores, g) # optimal pairwise alignment, normal string format
+        print(A)
+        A_aslist = []
+        for r in range(2):
+            for c in range(len(A[0])):
+                A_aslist.append([])
+                print(A_aslist)
+                A_aslist[c].append(A[c][r]) # a list of columns, 
+        print(A_aslist)
+        MA = extend_msa(MA, A_aslist)   # input is two lists of columns
     
     return MA
 
-#def cost_approx():   # the cost is the sum of pairs
+#def cost_approx():   # the cost is the sum of pairs, this function is already in msa_sp_score_3k.py
+from msa_sp_score_3k import compute_sp_score
 
     
 
@@ -124,7 +134,7 @@ def fill_matrix(seq1, seq2, scores, g):
             dscore = fm[i-1][j-1] + scores[seq1[i-1]][seq2[j-1]]
             lscore = fm[i][j-1] + g
             uscore = fm[i-1][j] + g
-            fm[i][j] = max(dscore, lscore, uscore)
+            fm[i][j] = min(dscore, lscore, uscore) # changed max to min because we minimize in this project
     return fm
 
 def get_traceback_arrow(matrix, row, col, match_score, g):
@@ -217,3 +227,5 @@ substitution_matrix = {'A': {'A':0, 'T':5, 'G':2, 'C':5},
 print(center_string(seqs_fromslides, substitution_matrix, 5))
 
 print(align('AGTGGGTCA', 'AAACTAGCCCG', substitution_matrix, 5))
+
+print(align_approx(seqs_fromslides, substitution_matrix, 5))
