@@ -273,11 +273,7 @@ def read_fasta(file):
 # ask if the user wants an alignment or just a cost
 def ask_user():
     print("Align sequences? (y/n)")
-    answer = input()
-    if answer == 'y' or answer == 'Y':
-        return True
-    else:
-        return False
+    return input().upper() == 'Y'
 #### define a main function ####
 def main():
     import sys
@@ -288,6 +284,7 @@ def main():
         print("Usage: msa_sp_score.py <filename>")
     filename = sys.argv[1]
     seqs = read_fasta(filename)
+    print(seqs)
     seqs = list(seqs.values())
     msa = ApproxAlignment(seqs, score_matrix, gap_penalty)
 
