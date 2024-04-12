@@ -1,0 +1,9 @@
+name: ete3
+channels:
+  - defaults
+dependencies:
+  - biopython
+  - numpy
+  - python=3
+  - conda-forge::ete3
+
