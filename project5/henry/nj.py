@@ -13,11 +13,9 @@ def read_control_file(file):
         line = line.strip().split()
         taxa.append(line[0])
         dist_mat.append([float(x) for x in line[1:]])
-    # make the alphabet lowercase
-    taxa = [x.lower() for x in taxa]
     return gap_cost, taxa, np.array(dist_mat)
 
-# define a basic tree class, should have children and parents
+# define a basic tree class to store the result of the algorithm
 class Node:
     def __init__(self, key):
         self.key = key
@@ -26,22 +24,16 @@ class Node:
         self.dist_to_parent = None
     def add_child(self, child):
         self.children.append(child)
-    # method to remove list of children
     def remove_children(self, children):
         for child in children:
             self.children.remove(child)
     def __repr__(self):
         return str(self.key)
     
-#### Helper functions 
+#### Helper functions #####
 # calculate_r: function to calculate the r value for a given node
 def calculate_r(i, D):
-    # sum the distances of the node to all the other nodes except itself
-    r = 0
-    # for j in range(D.shape[0]):
-    #     r += D[i,j]
     return D[i,:].sum() / (D.shape[0]-2)
-
 
 # create_N: function to create the N matrix from the D matrix
 def create_N(D):
@@ -69,7 +61,8 @@ def tree_to_newick(node):
         return f"'{node.key}'"
     else:
         return f"({','.join([tree_to_newick(x) + f':{abs(x.dist_to_parent):.3f}' for x in node.children])})" 
-    
+        
+##### nj function ####
 def nj(path):
     # read in the data
     gap_cost, S, D = read_control_file(path)
@@ -87,11 +80,10 @@ def nj(path):
         stoi = {s:i for i,s in enumerate(S)}
         itos = {i:s for s,i in stoi.items()}
         # get the index of the minimum value in the N matrix, excluding the diagonal
-        # min_idx = np.unravel_index(np.argmin(D + np.eye(D.shape[0])*np.max(D)), D.shape)
         min_idx = np.unravel_index(np.argmin(N + np.eye(N.shape[0])*np.max(N)), N.shape)
         # taxa names of the minimum indices according to N
         min_taxa = [itos[x] for x in min_idx]
-        # TREE CREATION
+        ### tree creation ###
         # add a new node to the tree with the joined taxa
         new_node = Node(f"{min_taxa[0]}{min_taxa[1]}")
         # define nodes for the min_taxa, which will be children of the joined node
@@ -112,7 +104,7 @@ def nj(path):
         new_node.add_child(child2)
         # add the new node to the top level of the tree
         tree.add_child(new_node)
-        # remove the nodes corresponding to the joined taxa
+        # remove the nodes corresponding to the joined taxa from the top level of the tree
         tree.remove_children([x for x in tree.children if x.key in min_taxa])
         D = update_D(D, min_idx)
         # add the new node to the list of taxa
@@ -133,7 +125,7 @@ def nj(path):
                                             - D[stoi[tree.children[0].key], stoi[tree.children[1].key]])
     return tree_to_newick(tree) + ';'
 
-# use the first argument as the path to the control file
+# first argument is path to control file used to build tree
 import sys
 def main():
     print(nj(sys.argv[1]))

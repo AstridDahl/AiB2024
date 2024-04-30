@@ -69,7 +69,8 @@ def tree_to_newick(node):
         return f"'{node.key}'"
     else:
         return f"({','.join([tree_to_newick(x) + f':{abs(x.dist_to_parent):.3f}' for x in node.children])})" 
-    
+        
+### tie the helpers together
 def nj(path):
     # read in the data
     gap_cost, S, D = read_control_file(path)
