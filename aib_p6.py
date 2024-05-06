@@ -191,7 +191,7 @@ print("first fold eop_1", first_fold(eop_1))
 print("first fold eop_2", first_fold(eop_2))
 
 
-def fold_between_matches_left_right_S1(eop): # S1
+def fold_between_matches_left_right_S1(eop): 
 
     # List of S1 matches
     indexes_dict = pick_max(eop)[2]
@@ -203,15 +203,26 @@ def fold_between_matches_left_right_S1(eop): # S1
 
     for i in range(len(sorted_S1_list)- 1):
 
-        if sorted_S1_list[i] + 2 == sorted_S1_list[i+1]:
-            S1 += "ff"
+        if len(S1) == 0 and sorted_S1_list[i] + 2 == sorted_S1_list[i+1]:
+            S1 += 'ff'
 
+        elif sorted_S1_list[i] + 2 == sorted_S1_list[i+1]:
+            
+            if len(S1) != 0 and (S1[-1] == "f"):
+                S1 += "ff" 
+            elif len(S1) != 0 and S1[-1] == "r":
+                S1 += "lf"
+            
         elif sorted_S1_list[i] + 2 < sorted_S1_list[i+1]:
             diff = sorted_S1_list[i+1] - sorted_S1_list[i] - 1
             f_number = (diff - 3) // 2
             fs = "f" * f_number
-            S1 += "fl" + fs + "rr" + fs     
+            S1 += "fl" + fs + "rr" + fs    
+
     return S1
+
+S4 = even_odd("hphpphhphpphphhpphph")
+print("LOOK", fold_between_matches_left_right_S1(S4))
 
 print("between S1 matches eop_1", fold_between_matches_left_right_S1(eop_1))
 print("between S1 matches eop_2", fold_between_matches_left_right_S1(eop_2))
@@ -278,26 +289,42 @@ print("full fold S5", full_fold(S5))
 S6 = even_odd("hhpphpphpphpphpphpphpphh")
 print("full fold S6", full_fold(S6))
 
+
+## Testing area ##
+'''
+S4 = even_odd("hphpphhphpphphhpphph")
+print("first fold", first_fold(S4))
+print("S1 for S4", fold_between_matches_left_right_S1(S4))
+print("S2 for S4", fold_between_matches_right_left_S2(S4))
+print("beginning and end", beginning_and_end(S4))
+'''
+
+## ---------------------------------------------------------- ##
+
 '''
 S1:
 python hpview3k.py hhppppphhppphppphp fflfrrflfrrflrrlf
 My score: 2
+- opt: 4
 
 S2:
 python hpview3k.py hphphhhppphhhhpphh fffffffrrfffflrrl
-My score: 5
+My score: 5jk
+- opt: 8
 
 S3:
 python hpview3k.py phpphphhhphhphhhhh ffffffffrrfffffff
 My score: 4
+- opt: 9
 
 S4:
-python hpview3k.py hphpphhphpphphhpphph ffflrrfffrrfflrrlff
-- Illegal fold
--9
+python hpview3k.py hphpphhphpphphhpphph ffflrrlffrrfflrrlff
+My score: 4
+- opt: 9
 
 S5:
-python hpview3k.py hhhpphphphpphphphpph ffflrrffffrrfffffff
+python hpview3k.py hhhpphphphpphphphpph ffflrrlfffrrfffffff
+My score: 3
 -10
 
 S6:
