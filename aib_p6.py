@@ -1,9 +1,3 @@
-# ------ PACKAGES ------ #
-from Bio import Phylo
-import numpy as np
-import re
-import io
-#------------------------#
 
 ########################
 ##       AIB P6       ##
@@ -84,9 +78,6 @@ Your presentation must include (1)  a presentation of the folding method(s) that
 and (2) the best fold, and the time it took to find it, for each of the above 15 benchmark strings. 
 '''
 
-str_1 = "hhppppphhppphppphp"
-str_2 = "hphphhhppphhhhpphh"
-
 def even_odd(str):
     list_hp = list(str)
     list_even_odd_p = []
@@ -99,11 +90,6 @@ def even_odd(str):
             list_even_odd_p.append('p')
     return list_even_odd_p
 
-print("str_1", even_odd(str_1))
-print("str_2", even_odd(str_2))
-
-eop_1 = ['e', 'o', 'p', 'p', 'p', 'p', 'p', 'o', 'e', 'p', 'p', 'p', 'e', 'p', 'p', 'p', 'e', 'p']
-eop_2 = ['e', 'p', 'e', 'p', 'e', 'o', 'e', 'p', 'p', 'p', 'e', 'o', 'e', 'o', 'p', 'p', 'e', 'o']
 
 def match_even_to_odd(eop_list):
     match = 0
@@ -124,8 +110,6 @@ def match_even_to_odd(eop_list):
                 j = j - 1
     return match, indexes_matches
      
-print("matches eop_1 even_odd", match_even_to_odd(eop_1))
-print("matches eop_2 even_odd", match_even_to_odd(eop_2))
 
 def match_odd_to_even(eop_list):
     match = 0
@@ -146,8 +130,6 @@ def match_odd_to_even(eop_list):
                 j = j - 1
     return match, indexes_matches
 
-print("matches eop_1 odd_even", match_odd_to_even(eop_1))
-print("matches eop_2 odd_even", match_odd_to_even(eop_2))
 
 def pick_max(eop_list):
     m_odd_even, indexes_oe = match_odd_to_even(eop_list)[0], match_odd_to_even(eop_list)[1]
@@ -158,11 +140,8 @@ def pick_max(eop_list):
     elif m_odd_even > m_even_odd:
         return m_odd_even, "o2e", indexes_oe
     elif m_odd_even == m_even_odd:
-        return m_odd_even, "same matchscore"
+        return m_odd_even, "same matchscore", indexes_eo
 
-
-print("max matches eop_1", pick_max(eop_1))
-print("max matches eop_2", pick_max(eop_2))
 
 def first_fold(eop):
     indexes_dict = pick_max(eop)[2]
@@ -183,12 +162,9 @@ def first_fold(eop):
     if 2 + second_element == first_element:
         first_loop = int(diff/2) * "f" + "rr" + (int(diff/2)-1) * "f"
     else:
-        first_loop = 'l' + int((diff/2)/2) * "f" + "rr" + (int(diff/2)-1) * "f"
+        first_loop = 'l' + int((diff/2)-1) * "f" + "rr" + (int(diff/2)-1) * "f"
 
     return first_loop
-
-print("first fold eop_1", first_fold(eop_1))
-print("first fold eop_2", first_fold(eop_2))
 
 
 def fold_between_matches_left_right_S1(eop): 
@@ -205,27 +181,34 @@ def fold_between_matches_left_right_S1(eop):
 
         if len(S1) == 0 and sorted_S1_list[i] + 2 == sorted_S1_list[i+1]:
             S1 += 'ff'
-
-        elif sorted_S1_list[i] + 2 == sorted_S1_list[i+1]:
             
-            if len(S1) != 0 and (S1[-1] == "f"):
-                S1 += "ff" 
-            elif len(S1) != 0 and S1[-1] == "r":
-                S1 += "lf"
-            
-        elif sorted_S1_list[i] + 2 < sorted_S1_list[i+1]:
+        elif len(S1) == 0 and sorted_S1_list[i] + 2 < sorted_S1_list[i+1]:
             diff = sorted_S1_list[i+1] - sorted_S1_list[i] - 1
             f_number = (diff - 3) // 2
             fs = "f" * f_number
-            S1 += "fl" + fs + "rr" + fs    
+            S1 += "fl" + fs + "rr" + fs 
 
+        elif sorted_S1_list[i] + 2 == sorted_S1_list[i+1]:
+            
+            if len(S1) != 0 and sorted_S1_list[i-1] < sorted_S1_list[i] - 2:
+                S1 += "lf" 
+            elif len(S1) != 0 and sorted_S1_list[i-1] == sorted_S1_list[i] - 2:
+                S1 += "ff"
+            
+        elif sorted_S1_list[i] + 2 < sorted_S1_list[i+1]:
+
+            diff = sorted_S1_list[i+1] - sorted_S1_list[i] - 1
+            f_number = (diff - 3) // 2
+            fs = "f" * f_number
+
+            if S1[-1] == "f":
+                S1 += "fl" + fs + "rr" + fs  
+
+            elif S1[-1] == "r":
+                S1 += "ll" + fs + "rr" + fs  
+             
     return S1
 
-S4 = even_odd("hphpphhphpphphhpphph")
-print("LOOK", fold_between_matches_left_right_S1(S4))
-
-print("between S1 matches eop_1", fold_between_matches_left_right_S1(eop_1))
-print("between S1 matches eop_2", fold_between_matches_left_right_S1(eop_2))
 
 def fold_between_matches_right_left_S2(eop):
 
@@ -250,28 +233,24 @@ def fold_between_matches_right_left_S2(eop):
 
     return S2
 
-print("between S2 matches eop_1", fold_between_matches_right_left_S2(eop_1))
-print("between S2 matches eop_2", fold_between_matches_right_left_S2(eop_2))
 
 def beginning_and_end(eop):
     indexes_dict = pick_max(eop)[2]
     min_key = min(indexes_dict.keys())
     min_value = indexes_dict[min_key]
-    diff = min_value - min_key
-    len_eop = len(eop)
-    missing = len_eop - diff - 1
-    return missing
 
-print("start and end", beginning_and_end(eop_1))
-print("start and end", beginning_and_end(eop_2))
+    add_beginning = min_key - 0
+    add_end = len(eop) - min_value - 1
+
+    return add_beginning, add_end
 
 def full_fold(eop):
     middle = first_fold(eop)
     left = fold_between_matches_left_right_S1(eop)
     right = fold_between_matches_right_left_S2(eop)
     start_and_end = beginning_and_end(eop)
-    start = "f" * int(start_and_end/2)
-    end = "f" * int(start_and_end/2)
+    start = "f" * start_and_end[0]
+    end = "f" * start_and_end[1]
     return start+left+middle+right+end
 
 
@@ -288,19 +267,26 @@ S5 = even_odd("hhhpphphphpphphphpph")
 print("full fold S5", full_fold(S5))
 S6 = even_odd("hhpphpphpphpphpphpphpphh")
 print("full fold S6", full_fold(S6))
+S7 = even_odd("pphpphhpppphhpppphhpppphh")
+print("full fold S7", full_fold(S7))
+S8 = even_odd("ppphhpphhppppphhhhhhhpphhpppphhpphpp")
+print("full fold S8", full_fold(S8))
+S9 = even_odd("pphpphhpphhppppphhhhhhhhhhpppppphhpphhpphpphhhhh")
+print("full fold S9", full_fold(S9))
+S10 = even_odd("hhphphphphhhhphppphppphpppphppphppphphhhhphphphphh")
+print("full fold S10", full_fold(S10))
+S11 = even_odd("pphhhphhhhhhhhppphhhhhhhhhhphppphhhhhhhhhhhhpppphhhhhhphhphp")
+print("full fold S11", full_fold(S11))
+S12 = even_odd("hhhhhhhhhhhhphphpphhpphhpphpphhpphhpphpphhpphhpphphphhhhhhhhhhhh")
+print("full fold S12", full_fold(S12))
+S13 = even_odd("hhhhpppphhhhhhhhhhhhpppppphhhhhhhhhhhhppphhhhhhhhhhhhppphhhhhhhhhhhhppphpphhpphhpphph")
+print("full fold S13", full_fold(S13))
+S14 = even_odd("pppppphphhppppphhhphhhhhphhpppphhpphhphhhhhphhhhhhhhhhphhphhhhhhhppppppppppphhhhhhhpphphhhpppppphphh")
+print("full fold S14", full_fold(S14))
+S15 = even_odd("ppphhpphhhhpphhhphhphhphhhhpppppppphhhhhhpphhhhhhppppppppphphhphhhhhhhhhhhpphhhphhphpphphhhpppppphhh")
+print("full fold S15", full_fold(S15))
 
-
-## Testing area ##
-'''
-S4 = even_odd("hphpphhphpphphhpphph")
-print("first fold", first_fold(S4))
-print("S1 for S4", fold_between_matches_left_right_S1(S4))
-print("S2 for S4", fold_between_matches_right_left_S2(S4))
-print("beginning and end", beginning_and_end(S4))
-'''
-
-## ---------------------------------------------------------- ##
-
+## --------------------- SCORES ------------------------- ##
 '''
 S1:
 python hpview3k.py hhppppphhppphppphp fflfrrflfrrflrrlf
@@ -309,11 +295,11 @@ My score: 2
 
 S2:
 python hpview3k.py hphphhhppphhhhpphh fffffffrrfffflrrl
-My score: 5jk
+My score: 5
 - opt: 8
 
 S3:
-python hpview3k.py phpphphhhphhphhhhh ffffffffrrfffffff
+python hpview3k.py phpphphhhphhphhhhh ffffffffffrrfffff
 My score: 4
 - opt: 9
 
@@ -323,39 +309,58 @@ My score: 4
 - opt: 9
 
 S5:
-python hpview3k.py hhhpphphphpphphphpph ffflrrlfffrrfffffff
-My score: 3
+python hpview3k.py hhhpphphphpphphphpph fflrrlfffrrffffffff
+My score: 4
 -10
 
 S6:
-python hpview3k.py hhpphpphpphpphpphpphpphh flrrflfrrflrrlfrrfllrrl
+python hpview3k.py hhpphpphpphpphpphpphpphh flrrllfrrflrrlfrrfllrrl
+My score : 6
 -9
 
-S7:
-python hpview3k.py pphpphhpppphhpppphhpppphh -8
+S7: 
+python hpview3k.py pphpphhpppphhpppphhpppphh ffflrrlffffrrfffflfrrflf
+My score: 2
+-8
 
 S8:
-python hpview3k.py ppphhpphhppppphhhhhhhpphhpppphhpphpp -14
+python hpview3k.py ppphhpphhppppphhhhhhhpphhpppphhpphpp ffffflrrllfrrflffrrlrrllfrrfllrrlff
+My score: 4
+-14
 
 S9:
-python hpview3k.py pphpphhpphhppppphhhhhhhhhhpppppphhpphhpphpphhhhh -23
+python hpview3k.py pphpphhpphhppppphhhhhhhhhhpppppphhpphhpphpphhhhh ffflrrllrrllfrrflfffffrrflffrrffllrrllfrrflffff
+My score: 11
+-23
 
 S10:
-python hpview3k.py hhphphphphhhhphppphppphpppphppphppphphhhhphphphphh -21
+python hpview3k.py hhphphphphhhhphppphppphpppphppphppphphhhhphphphphh flfffrrffflfffflrrllrrlfrrflrrllrrlfffflfffrrfffl
+My score: 10
+-21
 
 S11: 
-python hpview3k.py pphhhphhhhhhhhppphhhhhhhhhhphppphhhhhhhhhhhhpppphhhhhhphhphp -36
+python hpview3k.py pphhhphhhhhhhhppphhhhhhhhhhphppphhhhhhhhhhhhpppphhhhhhphhphp ffffffffffffflfrrflfffffffffrrffffffffffffflfrrflffffffffff 
+My score: 20
+-36
 
 S12:
-python hpview3k.py hhhhhhhhhhhhphphpphhpphhpphpphhpphhpphpphhpphhpphphphhhhhhhhhhhh -42
+python hpview3k.py hhhhhhhhhhhhphphpphhpphhpphpphhpphhpphpphhpphhpphphphhhhhhhhhhhh fffffffffffffffflrrllrrllfrrflfrrflfrrfllrrllrrlfffffffffffffff
+My score: 18
+-42
 
 S13:
-python hpview3k.py hhhhpppphhhhhhhhhhhhpppppphhhhhhhhhhhhppphhhhhhhhhhhhppphhhhhhhhhhhhppphpphhpphhpphph -53
+python hpview3k.py hhhhpppphhhhhhhhhhhhpppppphhhhhhhhhhhhppphhhhhhhhhhhhppphhhhhhhhhhhhppphpphhpphhpphph fffflfrrflfffffffffflffrrfflfffffffffflrrlrrfffffffflrrlfffffffffflffrrffllrrllrrlff
+My score: 22
+-53
 
 S14: 
-python hpview3k.py pppppphphhppppphhhphhhhhphhpppphhpphhphhhhhphhhhhhhhhhphhphhhhhhhppppppppppphhhhhhhpphphhhpppppphphh -48
+python hpview3k.py pppppphphhppppphhhphhhhhphhpppphhpphhphhhhhphhhhhhhhhhphhphhhhhhhppppppppppphhhhhhhpphphhhpppppphphh fffffffffflfrrflfffffffffflfrrfflrrllrrlfflrrlfffrrfflrrlfffffffflffffrrfffflfffffflfrrfllffrrfflfff
+My score: Wrong length
+-48
 
 S15: 
-python hpview3k.py ppphhpphhhhpphhhphhphhphhhhpppppppphhhhhhpphhhhhhppppppppphphhphhhhhhhhhhhpphhhphhphpphphhhpppppphhh -50
+python hpview3k.py ppphhpphhhhpphhhphhphhphhhhpppppppphhhhhhpphhhhhhppppppppphphhphhhhhhhhhhhpphhhphhphpphphhhpppppphhh fffflrrlfflrrlfffflrrlfffflfffrrffflfffflrrlfffffffrrffffffflrrlfffffffflrrlfffflfrrflfffflffrrfflf
+My score: 29
+-50
 
 '''
