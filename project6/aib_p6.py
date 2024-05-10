@@ -233,7 +233,6 @@ def fold_between_matches_right_left_S2(eop):
 
     return S2
 
-
 def beginning_and_end(eop):
     indexes_dict = pick_max(eop)[2]
     min_key = min(indexes_dict.keys())
@@ -305,32 +304,32 @@ My score: 4
 
 S4:
 python hpview3k.py hphpphhphpphphhpphph ffflrrlffrrfflrrlff
-My score: 4
+My score: 4 # worse than storm's 
 - opt: 9
 
 S5:
 python hpview3k.py hhhpphphphpphphphpph fflrrlfffrrffffffff
-My score: 4
+My score: 4 # better than storm's 
 -10
 
 S6:
 python hpview3k.py hhpphpphpphpphpphpphpphh flrrllfrrflrrlfrrfllrrl
-My score : 6
+My score : 6 # better
 -9
 
 S7: 
 python hpview3k.py pphpphhpppphhpppphhpppphh ffflrrlffffrrfffflfrrflf
-My score: 2
+My score: 2 #worse
 -8
 
 S8:
 python hpview3k.py ppphhpphhppppphhhhhhhpphhpppphhpphpp ffffflrrllfrrflffrrlrrllfrrfllrrlff
-My score: 4
+My score: 4 # worse
 -14
 
 S9:
 python hpview3k.py pphpphhpphhppppphhhhhhhhhhpppppphhpphhpphpphhhhh ffflrrllrrllfrrflfffffrrflffrrffllrrllfrrflffff
-My score: 11
+My score: 11 # worse
 -23
 
 S10:
@@ -345,22 +344,24 @@ My score: 20
 
 S12:
 python hpview3k.py hhhhhhhhhhhhphphpphhpphhpphpphhpphhpphpphhpphhpphphphhhhhhhhhhhh fffffffffffffffflrrllrrllfrrflfrrflfrrfllrrllrrlfffffffffffffff
-My score: 18
+My score: 18 # worse
 -42
 
 S13:
 python hpview3k.py hhhhpppphhhhhhhhhhhhpppppphhhhhhhhhhhhppphhhhhhhhhhhhppphhhhhhhhhhhhppphpphhpphhpphph fffflfrrflfffffffffflffrrfflfffffffffflrrlrrfffffffflrrlfffffffffflffrrffllrrllrrlff
-My score: 22
+My score: 22 # worse
 -53
 
 S14: 
 python hpview3k.py pppppphphhppppphhhphhhhhphhpppphhpphhphhhhhphhhhhhhhhhphhphhhhhhhppppppppppphhhhhhhpphphhhpppppphphh fffffffffflfrrflfffffffffflfrrfflrrllrrlfflrrlfffrrfflrrlfffffffflffffrrfffflfffffflfrrfllffrrfflfff
-My score: Wrong length
+My score: Wrong length # missing
 -48
 
 S15: 
 python hpview3k.py ppphhpphhhhpphhhphhphhphhhhpppppppphhhhhhpphhhhhhppppppppphphhphhhhhhhhhhhpphhhphhphpphphhhpppppphhh fffflrrlfflrrlfffflrrlfffflfffrrffflfffflrrlfffffffrrffffffflrrlfffffffflrrlfffflfrrflfffflffrrfflf
-My score: 29
+My score: 29 
 -50
 
 '''
+
+# Most of the relative paths changed a little with our implementation. Mostly shifting a loop +/- 1 step.
